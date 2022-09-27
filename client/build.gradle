@@ -1,0 +1,42 @@
+plugins {
+    id 'org.siouan.frontend-jdk11' version '6.0.0'
+}
+
+repositories {
+    mavenLocal()
+    mavenCentral()
+}
+
+frontend {
+    nodeVersion = '14.8.0'
+    assembleScript = 'run build'
+}
+
+tasks.register('copyClientResources', Copy) {
+    dependsOn = [
+        'installFrontend',
+        'assembleFrontend'
+    ]
+
+    group = 'frontend'
+    description = 'Copy client resources into server'
+
+    from "build"
+    into "../src/main/resources/ui/"
+}
+
+tasks.named('installFrontend') {
+    inputs.files('package.json', 'package-lock.json')
+}
+
+tasks.named('assembleFrontend') {
+    shouldRunAfter installFrontend
+
+    inputs.dir('src')
+    inputs.dir('public')
+    outputs.dir('build')
+}
+
+tasks.named('checkFrontend') {
+    enabled = false
+}

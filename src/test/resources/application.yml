@@ -1,0 +1,177 @@
+micronaut:
+  application:
+    name: akhq
+
+  security:
+    enabled: true
+    endpoints:
+      login:
+        path: "/login"
+      logout:
+        path: "/logout"
+        get-allowed: true
+    token:
+      jwt:
+        enabled: true
+        cookie:
+          enabled: true
+        signatures:
+          secret:
+            generator:
+              secret: d93YX6S7bukwTrmDLakBBWA3taHUkL4qkBqX2NYRJv5UQAjwCU4Kuey3mTTSgXAL
+    ldap:
+      default:
+        enabled: true
+        context:
+          server: ''
+          managerDn: ''
+          managerPassword: ''
+        search:
+          base: ''
+        groups:
+          enabled: true
+          base: ''
+  caches:
+    kafka-wrapper:
+      maximum-size: 0
+
+  server:
+    netty:
+      logLevel: TRACE
+
+  http:
+    client:
+      read-timeout: 30s
+
+akhq:
+  server:
+    access-log:
+      enabled: false
+
+  clients-defaults:
+    consumer:
+      properties:
+        group.id: Akhq
+        enable.auto.commit: "false"
+
+  topic:
+    replication: 1
+    retention: 86400000
+    partition: 1
+    internal-regexps:
+      - "^_.*$"
+      - "^.*_schemas$"
+      - "^.*connect-config$"
+      - "^.*connect-offsets$1"
+      - "^.*connect-status$"
+    stream-regexps:
+      - "^.*-changelog$"
+      - "^.*-repartition$"
+      - "^.*-rekey$"
+
+  topic-data:
+    poll-timeout: 5000
+
+  pagination:
+    page-size: 5
+
+  security:
+    default-group: no-filter
+    groups:
+      admin:
+        name: admin
+        roles:
+          - topic/read
+          - topic/insert
+          - topic/delete
+          - topic/config/update
+          - node/read
+          - node/config/update
+          - topic/data/read
+          - topic/data/insert
+          - topic/data/delete
+          - group/read
+          - group/delete
+          - group/offsets/update
+          - registry/read
+          - registry/insert
+          - registry/update
+          - registry/delete
+          - registry/version/delete
+          - acls/read
+          - connect/read
+          - connect/insert
+          - connect/update
+          - connect/delete
+          - connect/state/update
+      limited:
+        name: limited
+        roles:
+          - topic/read
+          - topic/insert
+          - topic/delete
+          - registry/version/delete
+        attributes:
+          topics-filter-regexp:
+            - "test.*"
+      operator:
+        name: operator
+        roles:
+          - topic/read
+          - topic/data/read
+          - topic/data/insert
+          - topic/data/delete
+        attributes:
+          topics-filter-regexp:
+            - "test-operator.*"
+      no-filter:
+        name: no-filter
+        roles:
+          - topic/read
+          - topic/insert
+          - topic/delete
+          - registry/version/delete
+    basic-auth:
+      - username: user
+        password: d74ff0ee8da3b9806b18c877dbf29bbde50b5bd8e4dad7a3a725000feb82e8f1
+        groups:
+          - limited
+      - username: MyUser3!@yàhöù.com
+        password: d74ff0ee8da3b9806b18c877dbf29bbde50b5bd8e4dad7a3a725000feb82e8f1
+        groups:
+          - limited
+      - username: admin
+        password: d74ff0ee8da3b9806b18c877dbf29bbde50b5bd8e4dad7a3a725000feb82e8f1
+        groups:
+          - admin
+
+    header-auth:
+      user-header: x-akhq-user
+      groups-header: x-akhq-group
+      users:
+        - username: header-user
+          groups:
+            - operator
+        - username: header-admin
+          groups:
+            - admin
+      groups:
+        - name: external-operator
+          groups:
+            - operator
+        - name: external-limited
+          groups:
+            - limited
+
+    ldap:
+      groups:
+        - name: ldap-admin
+          groups:
+            - limited
+        - name: ldap-operator
+          groups:
+            - operator
+      users:
+        - username: user2
+          groups:
+            - operator
